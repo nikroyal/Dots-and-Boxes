@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #1A1A1A;
+  --paper: #FAFAF7;
+  --crimson: #B91C3C;
+  --ochre: #B7791F;
+  --forest: #2F6B3F;
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'EB Garamond', Georgia, serif;
+}
+
+body { margin: 0; }
+
+.font-display { font-family: 'EB Garamond', Georgia, serif; font-feature-settings: "liga" 1, "dlig" 1; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+
+.btn-primary {
+  background: var(--ink); color: var(--paper); border: 1px solid var(--ink);
+  padding: 0.65rem 1.5rem; font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase;
+  transition: all 0.2s ease; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; justify-content: center;
+}
+.btn-primary:hover:not(:disabled) { background: var(--paper); color: var(--ink); }
+.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.btn-ghost {
+  background: transparent; color: var(--ink); border: 1px solid rgba(26,26,26,0.2);
+  padding: 0.65rem 1.5rem; font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase;
+  transition: all 0.2s ease; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; justify-content: center;
+}
+.btn-ghost:hover { border-color: var(--ink); background: rgba(26,26,26,0.03); }
+
+.btn-danger {
+  background: transparent; color: var(--crimson); border: 1px solid rgba(185,28,60,0.3);
+  padding: 0.65rem 1.5rem; font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase;
+  transition: all 0.2s ease; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; justify-content: center;
+}
+.btn-danger:hover { border-color: var(--crimson); background: rgba(185,28,60,0.05); }
+
+.input-field {
+  background: transparent; border: none; border-bottom: 1px solid rgba(26,26,26,0.2);
+  padding: 0.5rem 0; font-family: 'EB Garamond', Georgia, serif;
+  font-size: 1.15rem; outline: none; width: 100%;
+  transition: border-color 0.2s ease; color: var(--ink);
+}
+.input-field:focus { border-bottom-color: var(--ink); }
+.input-field.mono-input { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.12em; }
+
+.hairline { border-color: rgba(26,26,26,0.1); }
+
+.card {
+  border: 1px solid rgba(26,26,26,0.1);
+  background: rgba(255,255,255,0.5);
+  padding: 1.5rem;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.4s ease forwards; }
+
+@keyframes drawLine { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+.line-drawn { animation: drawLine 0.3s ease forwards; }
+
+@keyframes fillBox { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+.box-filled { animation: fillBox 0.4s ease forwards; transform-origin: center; }
+
+@keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+.pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: rgba(26,26,26,0.2); border-radius: 2px; }
