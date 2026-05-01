@@ -78,6 +78,13 @@ export function AuthProvider({ children }) {
     );
     const uid = cred.user.uid;
 
+    // Wait for auth state to fully propagate (sometimes needed for Firestore rules)
+  await new Promise(resolve => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      if (u && u.uid === uid) { unsub(); resolve(); }
+    });
+  });
+
     // Create profile doc
     await setDoc(doc(db, 'users', uid), {
       username: cleanUsername,
