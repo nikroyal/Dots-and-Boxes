@@ -6,7 +6,7 @@ import {
   onAuthStateChanged,
 } from 'firebase/auth';
 import {
-  doc, setDoc, getDoc, updateDoc, serverTimestamp,
+  doc, setDoc, updateDoc, serverTimestamp,
   onSnapshot,
 } from 'firebase/firestore';
 import { auth, db, usernameToEmail } from './firebase';
@@ -69,21 +69,15 @@ export function AuthProvider({ children }) {
     if (password.length < 6)
       throw new Error('Password must be at least 6 characters');
 
-    // Check username uniqueness via dedicated lookup doc (case-insensitive)
-    const usernameDoc = await getDoc(doc(db, 'usernames', cleanUsername));
-    if (usernameDoc.exists()) throw new Error('Username taken');
-
+    // Firebase Auth enforces email (and therefore username) uniqueness.
+    // A duplicate username surfaces as 'auth/email-already-in-use', which
+    // Login.jsx translates to "Username taken". No pre-check needed —
+    // and a pre-check would fail anyway because Firestore rules correctly
+    // reject unauthenticated reads.
     const cred = await createUserWithEmailAndPassword(
       auth, usernameToEmail(cleanUsername), password
     );
     const uid = cred.user.uid;
-
-    // Wait for auth state to fully propagate (sometimes needed for Firestore rules)
-  await new Promise(resolve => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      if (u && u.uid === uid) { unsub(); resolve(); }
-    });
-  });
 
     // Create profile doc
     await setDoc(doc(db, 'users', uid), {
