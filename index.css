@@ -1,0 +1,159 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Theme variables ─────────────────────────────────────────────────────
+   Hex values used directly in JSX inline styles still exist in a few
+   places; the most visible ones (board dots, progress bars, toasts) read
+   from these variables instead, so theme switching looks coherent. */
+:root,
+[data-theme='light'] {
+  --ink: #1A1A1A;
+  --paper: #FAFAF7;
+  --paper-tint: #FFFFFF;
+  --crimson: #B91C3C;
+  --ochre: #B7791F;
+  --forest: #2F6B3F;
+  --hairline: rgba(26, 26, 26, 0.1);
+  --hairline-strong: rgba(26, 26, 26, 0.2);
+  --bg-soft: rgba(26, 26, 26, 0.04);
+  --bg-hover: rgba(26, 26, 26, 0.05);
+  --header-bg: rgba(250, 250, 247, 0.92);
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme='dark'] {
+  --ink: #ECECE8;
+  --paper: #14140F;
+  --paper-tint: #1F1F1A;
+  --crimson: #E25C7A;
+  --ochre: #D9A85A;
+  --forest: #6FB87E;
+  --hairline: rgba(236, 236, 232, 0.1);
+  --hairline-strong: rgba(236, 236, 232, 0.22);
+  --bg-soft: rgba(236, 236, 232, 0.04);
+  --bg-hover: rgba(236, 236, 232, 0.06);
+  --header-bg: rgba(20, 20, 15, 0.92);
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme='sepia'] {
+  --ink: #3A2E1A;
+  --paper: #F4ECD8;
+  --paper-tint: #FAF3E0;
+  --crimson: #9F2E2E;
+  --ochre: #A0691A;
+  --forest: #4F6B2E;
+  --hairline: rgba(58, 46, 26, 0.15);
+  --hairline-strong: rgba(58, 46, 26, 0.28);
+  --bg-soft: rgba(58, 46, 26, 0.05);
+  --bg-hover: rgba(58, 46, 26, 0.07);
+  --header-bg: rgba(244, 236, 216, 0.92);
+  --shadow: 0 8px 24px rgba(58, 46, 26, 0.12);
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'EB Garamond', Georgia, serif;
+}
+
+body { margin: 0; }
+
+.font-display { font-family: 'EB Garamond', Georgia, serif; font-feature-settings: "liga" 1, "dlig" 1; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+
+.btn-primary {
+  background: var(--ink); color: var(--paper); border: 1px solid var(--ink);
+  padding: 0.65rem 1.5rem; font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase;
+  transition: all 0.2s ease; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; justify-content: center;
+}
+.btn-primary:hover:not(:disabled) { background: var(--paper); color: var(--ink); }
+.btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.btn-ghost {
+  background: transparent; color: var(--ink); border: 1px solid var(--hairline-strong);
+  padding: 0.65rem 1.5rem; font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase;
+  transition: all 0.2s ease; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; justify-content: center;
+}
+.btn-ghost:hover { border-color: var(--ink); background: var(--bg-hover); }
+
+.btn-danger {
+  background: transparent; color: var(--crimson); border: 1px solid rgba(185,28,60,0.3);
+  padding: 0.65rem 1.5rem; font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase;
+  transition: all 0.2s ease; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; justify-content: center;
+}
+.btn-danger:hover { border-color: var(--crimson); background: rgba(185,28,60,0.08); }
+
+.input-field {
+  background: transparent; border: none; border-bottom: 1px solid var(--hairline-strong);
+  padding: 0.5rem 0; font-family: 'EB Garamond', Georgia, serif;
+  font-size: 1.15rem; outline: none; width: 100%;
+  transition: border-color 0.2s ease; color: var(--ink);
+}
+.input-field:focus { border-bottom-color: var(--ink); }
+.input-field.mono-input { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.12em; }
+
+.hairline { border-color: var(--hairline); }
+
+.card {
+  border: 1px solid var(--hairline);
+  background: var(--paper-tint);
+  padding: 1.5rem;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.4s ease forwards; }
+
+@keyframes drawLine { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+.line-drawn { animation: drawLine 0.3s ease forwards; }
+
+@keyframes fillBox { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+.box-filled { animation: fillBox 0.4s ease forwards; transform-origin: center; }
+
+@keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+.pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+
+/* Last-move highlight: a soft pulsing glow on the most recent line. */
+@keyframes lastMovePulse {
+  0%, 100% { stroke-width: 3; filter: drop-shadow(0 0 0 transparent); }
+  50%      { stroke-width: 5; filter: drop-shadow(0 0 6px currentColor); }
+}
+.last-move-line { animation: lastMovePulse 1.6s ease-in-out infinite; }
+
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: var(--hairline-strong); border-radius: 2px; }
+
+/* ─── Confetti (victory only) ─────────────────────────────────────────── */
+.confetti-root {
+  position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 50;
+}
+.confetti-piece {
+  position: absolute; top: -20px; width: 8px; height: 14px;
+  opacity: 0.9; will-change: transform, opacity;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0%   { transform: translate3d(0, -20px, 0) rotate(0deg);    opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translate3d(var(--dx, 0), 110vh, 0) rotate(var(--rot, 720deg)); opacity: 0.9; }
+}
+
+/* ─── Reduced motion: kill animations site-wide ───────────────────────── */
+[data-reduced-motion='true'] .fade-in,
+[data-reduced-motion='true'] .line-drawn,
+[data-reduced-motion='true'] .box-filled,
+[data-reduced-motion='true'] .pulse-soft,
+[data-reduced-motion='true'] .last-move-line,
+[data-reduced-motion='true'] .confetti-piece {
+  animation: none !important;
+}
+[data-reduced-motion='true'] .confetti-root { display: none; }
+[data-reduced-motion='true'] * {
+  transition-duration: 0.01ms !important;
+}

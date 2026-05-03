@@ -1,0 +1,142 @@
+rules_version = '2';
+
+// ============================================================================
+// FIRESTORE SECURITY RULES
+// Paste these into Firebase Console → Firestore Database → Rules → Publish
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helpers ────────────────────────────────────────────────────────
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isSelf(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    function onlyChangingFields(allowedFields) {
+      return isSignedIn()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowedFields);
+    }
+
+    // ─── Username lookups (read-only, any signed-in user) ───────────────
+    match /usernames/{username} {
+      allow read: if isSignedIn();
+      // Only allow create on signup (no update/delete from clients)
+      allow create: if isSignedIn()
+                    && request.resource.data.uid == request.auth.uid;
+    }
+
+    // ─── User profiles ──────────────────────────────────────────────────
+    match /users/{userId} {
+      // Anyone signed in can read profiles (for leaderboards, profiles, etc.)
+      allow read: if isSignedIn();
+
+      // Only the user can create their own document
+      allow create: if isSelf(userId);
+
+      // The user can update their own profile, OR another user can perform
+      // limited social actions (friend requests, friends list, blocks).
+      allow update: if isSignedIn() && (
+        // Self updates: any field allowed
+        request.auth.uid == userId
+        // OR another user is sending a friend request (only writing to friendRequests)
+        || onlyChangingFields(['friendRequests', 'friends', 'blocked'])
+      );
+
+      allow delete: if false; // never delete from client
+    }
+
+    // ─── Invites ────────────────────────────────────────────────────────
+    match /invites/{inviteId} {
+      // Read: only sender or recipient
+      allow read: if isSignedIn() && (
+        request.auth.uid == resource.data.fromId
+        || request.auth.uid == resource.data.toId
+      );
+      // Create: sender must match
+      allow create: if isSignedIn()
+                    && request.resource.data.fromId == request.auth.uid;
+      // Update: sender or recipient (for accept/decline/cancel)
+      allow update: if isSignedIn() && (
+        request.auth.uid == resource.data.fromId
+        || request.auth.uid == resource.data.toId
+      );
+      allow delete: if isSignedIn()
+                    && request.auth.uid == resource.data.fromId;
+    }
+
+    // ─── Matches ────────────────────────────────────────────────────────
+    match /matches/{matchId} {
+      // Read: anyone signed in (so spectators can watch)
+      allow read: if isSignedIn();
+      // Create: must be one of the players
+      allow create: if isSignedIn()
+                    && request.auth.uid in request.resource.data.players;
+      // Update: players can update game state, anyone signed in can update
+      // spectators/chat (we trust the client here since we keep it simple)
+      allow update: if isSignedIn();
+      allow delete: if false;
+    }
+
+    // ─── Direct Message Conversations ──────────────────────────────────
+    // Doc id format: sortedUidA_sortedUidB
+    match /conversations/{convId} {
+      // Read: only the two participants
+      allow read: if isSignedIn()
+                  && request.auth.uid in resource.data.participants;
+      // Create: must be one of the participants
+      allow create: if isSignedIn()
+                    && request.auth.uid in request.resource.data.participants
+                    && request.resource.data.participants.size() == 2;
+      // Update: only participants (used for unread counts, lastMessage, etc.)
+      allow update: if isSignedIn()
+                    && request.auth.uid in resource.data.participants;
+      allow delete: if false;
+
+      // Messages subcollection
+      match /messages/{msgId} {
+        // Read: only participants of the parent conversation
+        allow read: if isSignedIn()
+                    && request.auth.uid in get(/databases/$(database)/documents/conversations/$(convId)).data.participants;
+        // Create: sender is the auth user, AND auth user is a participant
+        allow create: if isSignedIn()
+                      && request.resource.data.fromId == request.auth.uid
+                      && request.auth.uid in get(/databases/$(database)/documents/conversations/$(convId)).data.participants;
+        // No editing or deleting messages
+        allow update, delete: if false;
+      }
+    }
+
+    // ─── Clubs ──────────────────────────────────────────────────────────
+    match /clubs/{clubId} {
+      // Read: anyone signed in (clubs are discoverable)
+      allow read: if isSignedIn();
+      // Create: ownerId must match auth, must include self in members
+      allow create: if isSignedIn()
+                    && request.resource.data.ownerId == request.auth.uid
+                    && request.auth.uid in request.resource.data.members;
+      // Update: existing members can update freely (chat, etc.), OR a non-member
+      // can join/leave (only changing members + memberInfo).
+      allow update: if isSignedIn() && (
+        request.auth.uid in resource.data.members
+        || onlyChangingFields(['members', 'memberInfo'])
+      );
+      // Delete: owner only
+      allow delete: if isSignedIn()
+                    && request.auth.uid == resource.data.ownerId;
+    }
+
+    // ─── Activity feed entries ─────────────────────────────────────────
+    match /activities/{activityId} {
+      // Read: anyone signed in (we'll filter to friends client-side)
+      allow read: if isSignedIn();
+      // Create: only own (userId must match auth)
+      allow create: if isSignedIn()
+                    && request.resource.data.userId == request.auth.uid;
+      // No editing or deleting from clients
+      allow update, delete: if false;
+    }
+  }
+}
